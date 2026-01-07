@@ -1,5 +1,16 @@
 # PHP_Laravel12_Update_User_Profile_Using_API
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" />
+  <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white" />
+  <img src="https://img.shields.io/badge/Laravel_Sanctum-API_Auth-0D6EFD?style=for-the-badge&logo=laravel&logoColor=white" />
+  <img src="https://img.shields.io/badge/REST_API-JSON-28A745?style=for-the-badge&logo=postman&logoColor=white" />
+  <img src="https://img.shields.io/badge/MySQL-Database-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Postman-API_Testing-FF6C37?style=for-the-badge&logo=postman&logoColor=white" />
+  <img src="https://img.shields.io/badge/Auth-Token_Based-6F42C1?style=for-the-badge&logo=securityscorecard&logoColor=white" />
+</p>
+
+
 ##  Overview
 
 This project demonstrates how to build a **secure User Authentication and Profile Update API** using **Laravel 12** and **Laravel Sanctum**.
@@ -392,9 +403,10 @@ http://127.0.0.1:8000/api/login
 
 ```json
 {
-  "email": "hardik@gmail.com",
+  "email": "john@gmail.com",
   "password": "123456"
 }
+
 ```
 
 **Success Response:**
