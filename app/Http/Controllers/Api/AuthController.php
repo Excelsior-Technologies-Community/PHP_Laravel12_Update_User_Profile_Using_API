@@ -52,6 +52,18 @@ class AuthController extends Controller
             ], 401);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Update Last Login Information
+        |--------------------------------------------------------------------------
+        */
+
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+            'last_login_user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
@@ -62,7 +74,7 @@ class AuthController extends Controller
     /**
      * Logout the authenticated user.
      *
-     * Revokes only the token currently being used.
+     * Revokes only the current token.
      */
     public function logout(Request $request)
     {
@@ -73,5 +85,71 @@ class AuthController extends Controller
             'message' => 'Logout successful. Token has been revoked.',
         ]);
     }
-}
 
+    /**
+     * Logout from all devices.
+     */
+    public function logoutAll(Request $request)
+    {
+        $user = $request->user();
+
+        $user->tokens()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Logged out from all devices successfully.',
+        ]);
+    }
+
+    /**
+     * Get active sessions/devices.
+     */
+    public function sessions(Request $request)
+    {
+        $user = $request->user();
+
+        $tokens = $user->tokens()
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Active sessions retrieved successfully.',
+            'data' => $tokens->map(function ($token) {
+                return [
+                    'id' => $token->id,
+                    'name' => $token->name,
+                    'created_at' => $token->created_at,
+                    'last_used_at' => $token->last_used_at,
+                    'expires_at' => $token->expires_at,
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Revoke a specific device/session token.
+     */
+    public function revokeSession(Request $request, $tokenId)
+    {
+        $user = $request->user();
+
+        $token = $user->tokens()
+            ->where('id', $tokenId)
+            ->first();
+
+        if (! $token) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Session not found.',
+            ], 404);
+        }
+
+        $token->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Session revoked successfully.',
+        ]);
+    }
+}
