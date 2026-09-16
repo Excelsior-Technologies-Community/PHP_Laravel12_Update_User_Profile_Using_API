@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Profile
+    | Profile & Extended Information
     |--------------------------------------------------------------------------
     */
 
@@ -39,6 +39,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [
         UserProfileController::class,
         'update'
+    ]);
+
+    // Upload / update profile avatar
+    Route::post('/profile/avatar', [
+        UserProfileController::class,
+        'uploadAvatar'
+    ]);
+
+    // Delete profile avatar
+    Route::delete('/profile/avatar', [
+        UserProfileController::class,
+        'destroyAvatar'
     ]);
 
     // Delete authenticated user's account
@@ -113,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Profile Analytics
+    | Profile Analytics & Telemetry
     |--------------------------------------------------------------------------
     */
 
