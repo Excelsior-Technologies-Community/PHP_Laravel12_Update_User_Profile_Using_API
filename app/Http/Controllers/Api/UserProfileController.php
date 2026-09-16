@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class UserProfileController extends Controller
@@ -23,6 +24,18 @@ class UserProfileController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar' => $user->avatar,
+                'avatar_url' => $user->avatar_url,
+                'initials' => $user->initials,
+                'avatar_bg_color' => $user->avatar_bg_color,
+                'phone' => $user->phone,
+                'bio' => $user->bio,
+                'city' => $user->city,
+                'country' => $user->country,
+                'website' => $user->website,
+                'github_profile' => $user->github_profile,
+                'twitter_profile' => $user->twitter_profile,
+                'timezone' => $user->timezone,
                 'email_verified_at' => $user->email_verified_at,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,
@@ -44,6 +57,14 @@ class UserProfileController extends Controller
                 'email',
                 Rule::unique('users')->ignore($user->id),
             ],
+            'phone' => 'nullable|string|max:30',
+            'bio' => 'nullable|string|max:1000',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'website' => 'nullable|url|max:255',
+            'github_profile' => 'nullable|string|max:255',
+            'twitter_profile' => 'nullable|string|max:255',
+            'timezone' => 'nullable|string|max:50',
         ]);
 
         $user->update($data);
@@ -55,6 +76,68 @@ class UserProfileController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar_url' => $user->avatar_url,
+                'phone' => $user->phone,
+                'bio' => $user->bio,
+                'city' => $user->city,
+                'country' => $user->country,
+                'website' => $user->website,
+                'github_profile' => $user->github_profile,
+                'twitter_profile' => $user->twitter_profile,
+                'timezone' => $user->timezone,
+            ],
+        ]);
+    }
+
+    /**
+     * Upload or update profile avatar image.
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar' => $path]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile avatar uploaded successfully',
+            'data' => [
+                'avatar' => $user->avatar,
+                'avatar_url' => $user->avatar_url,
+                'initials' => $user->initials,
+            ],
+        ]);
+    }
+
+    /**
+     * Delete user profile avatar.
+     */
+    public function destroyAvatar(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update(['avatar' => null]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile avatar removed successfully',
+            'data' => [
+                'avatar_url' => null,
+                'initials' => $user->initials,
+                'avatar_bg_color' => $user->avatar_bg_color,
             ],
         ]);
     }
@@ -96,8 +179,11 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
 
-        $user->tokens()->delete();
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
 
+        $user->tokens()->delete();
         $user->delete();
 
         return response()->json([
@@ -116,7 +202,12 @@ class UserProfileController extends Controller
         $fields = [
             'name' => !empty($user->name),
             'email' => !empty($user->email),
-            'email_verified_at' => !empty($user->email_verified_at),
+            'avatar' => !empty($user->avatar),
+            'phone' => !empty($user->phone),
+            'bio' => !empty($user->bio),
+            'location' => !empty($user->city) || !empty($user->country),
+            'social_links' => !empty($user->website) || !empty($user->github_profile) || !empty($user->twitter_profile),
+            'email_verified' => !empty($user->email_verified_at),
         ];
 
         $completed = collect($fields)->filter()->count();
